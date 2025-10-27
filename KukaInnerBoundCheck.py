@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 import logging
 import csv
+import time
+import pickle
 
 
 def fibonacci_sphere(samples=1000):
@@ -27,7 +29,30 @@ def fibonacci_sphere(samples=1000):
     return points
 
 
-orientation_samples = 90*90*2
+def time_difference(first_time, second_time, need_hours):
+    time_diff = second_time - first_time
+    difference_seconds = round(((time_diff / 1000) % 60) % 10, 3)
+    difference_ten_seconds = math.floor(((time_diff / 1000) % 60) / 10)
+    difference_minutes = math.floor((time_diff / 60000 % 100) % 10)
+    difference_ten_minutes = math.floor(((time_diff / 60000) % 100) / 10)
+    if need_hours:
+        difference_hours = math.floor(time_diff / 3600000 % 100)
+        start_to_end_difference_formatted = (str(difference_hours) + ":" +
+                                             str(difference_ten_minutes) +
+                                             str(difference_minutes) + ":" +
+                                             str(difference_ten_seconds) +
+                                             str(difference_seconds))
+    else:
+        start_to_end_difference_formatted = (str(difference_ten_minutes) +
+                                             str(difference_minutes) + ":" +
+                                             str(difference_ten_seconds) +
+                                             str(difference_seconds))
+    return start_to_end_difference_formatted
+
+
+logging.basicConfig(filename="KukaBoundCheck.log", level=logging.INFO)
+
+orientation_samples = 180*180*2
 bound_samples = 180
 bound_location = 284.52767879  # mm
 
@@ -56,6 +81,10 @@ approach_vectors = []
 for point in approach_sphere:
     if point[1] >= 0:
         approach_vectors.append(point)
+
+with open('testing.csv', 'w', newline='') as csvfile:
+    writer = csv.writer(csvfile)
+    writer.writerows([['Approach vectors'], [pickle.dumps([[approach_vectors]])]])
 
 orientation_vectors = []
 for point_num in range(len(approach_vectors)):
