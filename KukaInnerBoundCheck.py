@@ -54,7 +54,7 @@ fields = ['position', 'approach', 'orientation',
 
 orientation_samples = 90*90*2
 bound_samples = 180*2
-bound_location = 284.52767879  # mm
+bound_location = 280  # mm
 
 angle_step = math.pi/bound_samples
 angle = -math.pi/2
@@ -110,7 +110,7 @@ plt.show()'''
 lbr = rtb.models.URDF.LBR()                  # instantiate robot model
 print(lbr)
 
-with open('testing.csv', 'w', newline='') as csvfile:
+with open('testing' +str(time.time()*1000) +'.csv', 'w', newline='') as csvfile:
     csvwriter = csv.writer(csvfile)
     csvwriter.writerow(fields)
 
@@ -141,19 +141,8 @@ with open('testing.csv', 'w', newline='') as csvfile:
                                    approach_vectors[vector_num][1],
                                    approach_vectors[vector_num][2]]))
                 sol = lbr.ik_LM(Tep, joint_limits=True)
-                print(sol)
                 if sol[1] == 1:
                     orientation_count += 1
-                now_time = int(time.time()*1000)
-                location_running = time_difference(location_time_start, now_time, False)
-                total_running = time_difference(start_time, now_time, True)
-            logging.info("Location: " + str(location_count) + "/" + str(len(workspace_locations)) +
-                         "\nOrientation: " + str(vector_num) + "/" + str(len(approach_vectors)) +
-                         "\nPossible Orientations Found: " + str(orientation_count) +
-                         "\nTime at this location: " + str(location_running) +
-                         "\nTotal time running: " + str(total_running) +
-                         "\n"
-                         )
 
             '''print("Location: " + str(location_count) + "/" + str(len(workspace_locations)) +
                   ", Orientation: " + str(vector_num) + "/" + str(len(approach_vectors)) +
@@ -167,8 +156,19 @@ with open('testing.csv', 'w', newline='') as csvfile:
                 csvwriter.writerows([[location, approach_vectors[vector_num], tuple(orientation_vectors[vector_num]),
                                       tuple(alt_orientation_vectors[vector_num]),
                                       sol[1], tuple(sol[0])]])
-        logging.info('##########################################################################################')
         possible_orientations.append(orientation_count)
 
+        now_time = int(time.time() * 1000)
+        location_running = time_difference(location_time_start, now_time, False)
+        total_running = time_difference(start_time, now_time, True)
+        logging.info("Location: " + str(location_count) + "/" + str(len(workspace_locations)) +
+                     "\nPossible Orientations Found: " + str(orientation_count) +
+                     "\nTime at this location: " + str(location_running) +
+                     "\nTotal time running: " + str(total_running) +
+                     "\n"
+                     )
 
-print('Finished :' + str(possible_orientations))
+logging.info('Finished :' + str(possible_orientations))
+
+while True:
+    continue
