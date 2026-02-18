@@ -18,10 +18,16 @@ patientGrasp = True
 palmarOrientation = True
 rightHand = True
 completeness = True
-createPlot = True
+createPlot = False
 toleranceAngle = 90  # deg
 COM_safety_radius = 500  # mm
 # #######################################################################################
+
+# TODO: Extending vertical base
+#  1)Check x/y  location inside radius
+#  2)check entire z for orientation
+
+#  TODO: Rotation of robot about its x/y and therefore rotation of the trajectory about the z
 
 
 def check_workspace(point):
@@ -68,7 +74,7 @@ def check_location_full(voxels, full_trajectory, description):
         full_trajectory_bool = True
         for trajectory_point in full_trajectory[1:-2]:
             trajectory_vector = np.array(trajectory_point)-np.array(trajectories[trackedMarker]['rotated'][0])
-            trajectory_in_workspace = np.array(location) + np.array(trajectory_vector)
+            trajectory_in_workspace = np.array(voxel) + np.array(trajectory_vector)
             if not check_workspace(trajectory_in_workspace):
                 full_trajectory_bool = False
                 break
@@ -96,7 +102,7 @@ def check_orientation(voxels, keys, boolean_tensor, orientation_vector, trajecto
         if a_index >= 500:
             a_index -= 500
         if boolean_tensor[x_index][z_index][a_index]:
-            new_valid_voxels.append(location)
+            new_valid_voxels.append(voxel)
     return new_valid_voxels
 
 
@@ -125,7 +131,7 @@ def check_orientation_full(voxels, keys, boolean_tensor, full_orientations, full
                 full_trajectory_bool = False
                 break
         if full_trajectory_bool:
-            newValidLocations.append(location)
+            new_valid_voxels.append(voxel)
     return new_valid_voxels
 
 
@@ -278,7 +284,7 @@ if createPlot:
     ax.scatter(xs=v_incenter_com_p[0]+COM_p[0], ys=v_incenter_com_p[1]+COM_p[1], zs=0)
     ax.scatter(xs=v_incenter_com_p[0]+COM_p[0], ys=v_incenter_com_p[1]+COM_p[1], zs=v_incenter_com_p[2])
     ax.scatter(xs=rotated_x, ys=rotated_y, zs=rotated_z)
-    ax.scatter(xs=range(1500), ys=[0]*1500, zs=[0]*1500, style='--')
+    ax.scatter(xs=range(1500), ys=[0]*1500, zs=[0]*1500)
     ax.set_aspect('equal')
     ax.set_xlabel('x')
     ax.set_ylabel('y')
@@ -384,6 +390,7 @@ if createPlot:
     poly_collection = mplot3d.art3d.Poly3DCollection(workspace_mesh.vectors, alpha=0.2)
     poly_collection.set_color((0.5, 0.5, 1))  # play with color
     axes.add_collection3d(poly_collection)
+    axes.plot(xs=valid_locations[0][0], ys=validLocations[0][1], zs=validLocations[0][2])
 
     '''# Set the COM of the trajectory to the origin of joint 2 to best visualize scale
     x = [w - COM[0] for w in trajectories[trackedMarker]['x']]
@@ -413,7 +420,7 @@ if createPlot:
     print(sol)
     print(sol[0]*180/np.pi)
 
-    qt = rtb.jtraj(lbr.qr, sol[0], 50)
+    qt = rtb.jtraj(sol[0], sol[0], 1)
     lbr.plot(qt.q, backend='pyplot')
 
     axes.set_aspect('equal')
@@ -434,5 +441,3 @@ validLocations = check_orientation_full(validLocations, orientationKeys, boolean
 
 print(len(validLocations))
 
-
-# TODO: Add robotics toolbox to plot stick diagram to check orientations
